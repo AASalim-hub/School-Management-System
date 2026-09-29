@@ -48,7 +48,7 @@ app.get("/student/:id", (req, res) => {
     let student = students.find(student => student.id === id);
 
     if (!student) {
-        res.json({
+        return res.json({
             message: `Student with the id: ${req.params.id} does not exist`
         })
     }
