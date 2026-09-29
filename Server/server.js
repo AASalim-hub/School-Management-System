@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+app.use(express.json())
+
 let students = [{
     id: 1,
     name: "AA Salim",
@@ -41,7 +43,7 @@ app.get("/students", (req, res) => {
     res.json(students);
 })
 
-app.get("/student/:id", (req, res) => {
+app.get("/students/:id", (req, res) => {
 
     let id = Number(req.params.id);
 
@@ -54,6 +56,21 @@ app.get("/student/:id", (req, res) => {
     }
 
     res.json(student);
+})
+
+
+app.post("/register", (req, res) => {
+    let regiserStudent = {
+        id: students.length + 1,
+        name: req.body.name,
+        age: req.body.age,
+        className: req.body.className,
+        gender: req.body.gender
+    }
+
+    students.push(regiserStudent);
+
+    res.json({Message: `${req.body.name} student account has been created successfully`})
 })
 
 
