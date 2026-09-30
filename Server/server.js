@@ -1,5 +1,4 @@
 const express = require('express');
-const { required } = require('joi');
 const joi = require('joi');
 const app = express();
 
