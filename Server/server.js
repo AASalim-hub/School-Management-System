@@ -75,7 +75,7 @@ app.post("/students", (req, res) => {
     const{error, value} = studentsCreationSchema.validate(req.body);
 
     if (error) {
-        return res.status(400).json({
+        return res.status(404).json({
             error: "Creation failed",
             message: error.details[0].message
         })
@@ -93,7 +93,12 @@ app.post("/students", (req, res) => {
 
     students.push(studentCreation);
 
-    res.status(201).json({Message: `${req.body.name} student account has been created successfully`})
+    res.status(201).json({Message: `${req.body.name} student account has been created successfully`,
+    studentIfo: `Id: ${studentCreation.id} 
+    Name: ${studentCreation.name} 
+    Age: ${studentCreation.age} 
+    Level: ${studentCreation.className} 
+    Gender: ${studentCreation.gender}`})
 })
 
 
