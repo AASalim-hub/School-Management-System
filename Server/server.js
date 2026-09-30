@@ -1,7 +1,17 @@
 const express = require('express');
+const { required } = require('joi');
+const joi = require('joi');
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
+
+
+const studentsCreationSchema = joi.object({
+        name: joi.string().min(3).required(),
+        age: joi.number().integer().min(18).max(100).required(),
+        className: joi.string().required(),
+        gender: joi.string().lowercase().valid('male', 'female', 'others').required()
+    })
 
 let students = [{
     id: 1,
@@ -35,7 +45,7 @@ let students = [{
 
 
 app.get("/", (req, res) => {
-    res.send("School Management System API")
+    res.status(200).send("School Management System API")
 })
 
 
@@ -50,7 +60,7 @@ app.get("/students/:id", (req, res) => {
     let student = students.find(student => student.id === id);
 
     if (!student) {
-        return res.json({
+        return res.status(400).json({
             message: `Student with the id: ${req.params.id} does not exist`
         })
     }
@@ -59,18 +69,31 @@ app.get("/students/:id", (req, res) => {
 })
 
 
-app.post("/register", (req, res) => {
-    let regiserStudent = {
-        id: students.length + 1,
-        name: req.body.name,
-        age: req.body.age,
-        className: req.body.className,
-        gender: req.body.gender
+app.post("/students", (req, res) => {
+
+
+    const{error, value} = studentsCreationSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({
+            error: "Creation failed",
+            message: error.details[0].message
+        })
     }
 
-    students.push(regiserStudent);
+     const formattedGender = value.gender.charAt(0).toUpperCase() + value.gender.slice(1);
 
-    res.json({Message: `${req.body.name} student account has been created successfully`})
+    let studentCreation = {
+        id: students.length + 1,
+        name: value.name,
+        age: value.age,
+        className: value.className,
+        gender: formattedGender
+    }
+
+    students.push(studentCreation);
+
+    res.status(201).json({Message: `${req.body.name} student account has been created successfully`})
 })
 
 
