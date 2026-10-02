@@ -1,4 +1,5 @@
 const joi = require('joi');
+const Student = require('../models/studentModel.js');
 
 const studentsCreationSchema = joi.object({
     name: joi.string().min(3).required(),
