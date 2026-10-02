@@ -3,6 +3,7 @@ const app = express();
 
 app.use(express.json());
 
+
 const studentRoutes = require('./routes/studentRoutes.js');
 
 
