@@ -2,25 +2,25 @@ const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
     name: {
-        type: string,
+        type: String,
         required: true,
         minLength: 3
     },
 
     age: {
-        type: number,
+        type: Number,
         required: true,
         min: 18,
         max: 75
     },
 
     className: {
-        type: string,
+        type: String,
         required: true,
     },
 
     gender: {
-        type: string,
+        type: String,
         required: true,
         lowercase: true,
         enum: ['male', 'female', 'others']
