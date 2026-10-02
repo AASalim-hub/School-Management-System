@@ -4,13 +4,20 @@ const app = express();
 
 app.use(express.json());
 
-
 const studentsCreationSchema = joi.object({
-        name: joi.string().min(3).required(),
-        age: joi.number().integer().min(18).max(100).required(),
-        className: joi.string().required(),
-        gender: joi.string().lowercase().valid('male', 'female', 'others').required()
-    })
+    name: joi.string().min(3).required(),
+    age: joi.number().integer().min(18).max(100).required(),
+    className: joi.string().required(),
+    gender: joi.string().lowercase().valid('male', 'female', 'others').required()
+});
+
+// Create an update schema where all fields are optional for PATCH
+const studentsUpdateSchema = joi.object({
+    name: joi.string().min(3),
+    age: joi.number().integer().min(18).max(100),
+    className: joi.string(),
+    gender: joi.string().lowercase().valid('male', 'female', 'others')
+});
 
 let students = [{
     id: 1,
@@ -40,47 +47,40 @@ let students = [{
     className: "300L",
     gender: "female"
 },
-]
-
+];
 
 app.get("/", (req, res) => {
     res.status(200).send("School Management System API")
-})
-
+});
 
 app.get("/students", (req, res) => {
     res.json(students);
-})
+});
 
 app.get("/students/:id", (req, res) => {
-
     let id = Number(req.params.id);
-
     let student = students.find(student => student.id === id);
 
     if (!student) {
         return res.status(404).json({
             message: `Student with the id: ${req.params.id} does not exist`
-        })
+        });
     }
 
     res.json(student);
-})
-
+});
 
 app.post("/students", (req, res) => {
-
-
-    const{error, value} = studentsCreationSchema.validate(req.body);
+    const { error, value } = studentsCreationSchema.validate(req.body);
 
     if (error) {
         return res.status(400).json({
             error: "Creation failed",
             message: error.details[0].message
-        })
+        });
     }
 
-     const formattedGender = value.gender.charAt(0).toUpperCase() + value.gender.slice(1);
+    const formattedGender = value.gender.charAt(0).toUpperCase() + value.gender.slice(1);
 
     let studentCreation = {
         id: students.length + 1,
@@ -88,19 +88,64 @@ app.post("/students", (req, res) => {
         age: value.age,
         className: value.className,
         gender: formattedGender
-    }
+    };
 
     students.push(studentCreation);
 
-    res.status(201).json({Message: `${req.body.name} student account has been created successfully`,
-    studentIfo: studentCreation 
-})
-})
+    res.status(201).json({
+        Message: `${req.body.name} student account has been created successfully`,
+        studentIfo: studentCreation 
+    });
+});
 
+// Completed PATCH route
+app.patch("/students/:id", (req, res) => {
+    const id = Number(req.params.id);
+    const studentIndex = students.findIndex(student => student.id === id);
 
+    // 1. If student doesn't exist, return 404
+    if (studentIndex === -1) {
+        return res.status(404).json({
+            message: `Student with the id: ${req.params.id} does not exist`
+        });
+    }
 
+    // 2. Validate data coming from req.body using the optional schema
+    const { error, value } = studentsUpdateSchema.validate(req.body);
 
+    if (error) {
+        return res.status(400).json({
+            error: "Update failed",
+            message: error.details[0].message
+        });
+    }
+
+    const currentStudent = students[studentIndex];
+
+    // Format gender if it was supplied in the request body
+    let formattedGender = currentStudent.gender;
+    if (value.gender) {
+        formattedGender = value.gender.charAt(0).toUpperCase() + value.gender.slice(1);
+    }
+
+    // 3. Update only the fields supplied by the user
+    const updatedStudent = {
+        ...currentStudent,
+        name: value.name !== undefined ? value.name : currentStudent.name,
+        age: value.age !== undefined ? value.age : currentStudent.age,
+        className: value.className !== undefined ? value.className : currentStudent.className,
+        gender: formattedGender
+    };
+
+    students[studentIndex] = updatedStudent;
+
+    // 4. Return the updated student with a success status
+    res.status(200).json({
+        message: "Student updated successfully",
+        student: updatedStudent
+    });
+});
 
 app.listen(3000, () => {
-    console.log("Server is running.....")
-})
+    console.log("Server is running.....");
+});
