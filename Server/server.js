@@ -94,23 +94,20 @@ app.post("/students", (req, res) => {
 
     res.status(201).json({
         Message: `${req.body.name} student account has been created successfully`,
-        studentIfo: studentCreation 
+        studentInfo: studentCreation 
     });
 });
 
-// Completed PATCH route
 app.patch("/students/:id", (req, res) => {
     const id = Number(req.params.id);
     const studentIndex = students.findIndex(student => student.id === id);
 
-    // 1. If student doesn't exist, return 404
     if (studentIndex === -1) {
         return res.status(404).json({
             message: `Student with the id: ${req.params.id} does not exist`
         });
     }
 
-    // 2. Validate data coming from req.body using the optional schema
     const { error, value } = studentsUpdateSchema.validate(req.body);
 
     if (error) {
@@ -122,13 +119,11 @@ app.patch("/students/:id", (req, res) => {
 
     const currentStudent = students[studentIndex];
 
-    // Format gender if it was supplied in the request body
     let formattedGender = currentStudent.gender;
     if (value.gender) {
         formattedGender = value.gender.charAt(0).toUpperCase() + value.gender.slice(1);
     }
 
-    // 3. Update only the fields supplied by the user
     const updatedStudent = {
         ...currentStudent,
         name: value.name !== undefined ? value.name : currentStudent.name,
@@ -139,10 +134,28 @@ app.patch("/students/:id", (req, res) => {
 
     students[studentIndex] = updatedStudent;
 
-    // 4. Return the updated student with a success status
     res.status(200).json({
         message: "Student updated successfully",
         student: updatedStudent
+    });
+});
+
+app.delete("/students/:id", (req, res) => {
+    const id = Number(req.params.id);
+
+    const studentIndex = students.findIndex(student => student.id === id);
+
+    if (studentIndex === -1) {
+        return res.status(404).json({
+            message: `Student with the id: ${req.params.id} does not exist`
+        });
+    }
+
+    const deletedStudent = students.splice(studentIndex, 1)[0];
+
+    res.status(200).json({
+        message: "Student deleted successfully",
+        deletedStudent: deletedStudent
     });
 });
 
